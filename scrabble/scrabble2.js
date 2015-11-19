@@ -1,5 +1,8 @@
 /*
- Simple calculator to count the total points given a four-letter word and a list of start positions
+
+ Purpose:
+ 
+ A simple calculator to count the total points given a four-letter word and a list of start positions
  The grid is 4x10
  The list of letter square multiples is as follows:
  Every other multiple of three (3, 9, 15...)    DOUBLE
@@ -27,20 +30,20 @@
     E.g.:
 
 JAVA
-1
-2
-4
-12
-21
+1,V
+2,H
+6,V
+12,H
+21,H
  
  Output:
     Five lines, score for each start position. E.g.:
 
 18
 17
+42
 30
-17
-36
+66
 
 
 */
@@ -58,7 +61,9 @@ var wordMultipliers = [
     1, 3, 1, 1, 1, 1, 1, 1, 1, 1
 ];
 
-var letterScores = {
+var VOFFSET = 10;
+
+var letterValues = {
     A	:	1,
     E	:	1,
     D	:	2,
@@ -85,9 +90,17 @@ function doScrabble (inputArray) {
     var scores = [];    
     for ( var i = 0; i < inputArray.length; i++ ) {
         var score = 0;
-        var startPosition = parseInt(inputArray[i]);
-        //console.log("doScrabble    startPosition", startPosition);
+        var entry = inputArray[i];
+        if ( ! entry.match(/^(\d+),(V|H)/) ) {
+            console.log("Incorrect entry: ", entry);
+            return null;
+        }
 
+        var startPosition = parseInt(entry.match(/^(\d+),(V|H)/)[1]);
+        var orientation = entry.match(/^(\d+),(V|H)/)[2];
+        //console.log("doScrabble    startPosition", startPosition);
+        //console.log("doScrabble    orientation", orientation);
+    
         // ADD SCORE FOR EACH LETTER
         var letters = word.split("");
         var wordMultiplier = 1;
@@ -95,31 +108,41 @@ function doScrabble (inputArray) {
         for ( var k = 0; k < letters.length; k++ ) {
             var letter = letters[k];
             //console.log("doScrabble    letter", letter);
-            var letterScore = letterScores[letter];
-            //console.log("doScrabble    letterScore", letterScore);
-            var boardPosition = startPosition + k;
+            var letterValue = letterValues[letter];
+            //console.log("doScrabble    letterValue", letterValue);
+            var boardPosition = parseInt(startPosition) + k;
+            if ( orientation == "V" ) {
+                boardPosition = startPosition + VOFFSET * k;
+            }
             //console.log("doScrabble    boardPosition", boardPosition);
+   
             var positionMultiple = letterMultipliers[boardPosition - 1];
             //console.log("positionMultiple", positionMultiple);
-            
+
+            var letterScore = letterValue * positionMultiple;
+            //console.log("doScrabble    letterScore", letterScore);
+            score += letterScore;
+
             if ( wordMultipliers[boardPosition - 1] > wordMultiplier ) {
                 wordMultiplier = wordMultipliers[boardPosition - 1];
             }
-            score += letterScore * positionMultiple;
         }
         //console.log("doScrabble    RAW score", score);
         score = score * wordMultiplier;
         //console.log("doScrabble    FINAL score", score);
         
         scores.push(score);
+        //console.log("doScrabble    scores", scores);
+        //console.log("");
+        
     }
 
     // PRINT RESULTS
     for ( var i = 0; i < scores.length; i++ ) {
         console.log(scores[i])
     }
-
-    return scores;    
+    
+    return scores;
 };
 
 
@@ -140,3 +163,4 @@ prompt.setPrompt("> ", 2);
 prompt.prompt();
 
 
+console.log("COMPLETED scrabble2");
